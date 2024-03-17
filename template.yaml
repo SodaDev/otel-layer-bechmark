@@ -31,3 +31,13 @@ Resources:
         ProjectGroup: !Ref ProjectGroup
         Environment: !Ref Environment
         TracingName: 'otel-benchmark-lambda'
+  OtelDecoupled:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./OtelDecoupled/template.yaml
+      # Optional parameter that can have default value overridden
+      Parameters:
+        Project: !Ref Project
+        ProjectGroup: !Ref ProjectGroup
+        Environment: !Ref Environment
+        TracingName: 'otel-benchmark-lambda'

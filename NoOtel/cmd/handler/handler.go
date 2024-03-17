@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"github.com/Ryanair/gofrlib/frotel"
 	"github.com/Ryanair/gofrlib/log"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type LambdaHandler struct {
@@ -15,8 +17,9 @@ func New(loggerConfig log.Configuration) *LambdaHandler {
 
 func (lh *LambdaHandler) Handle(ctx context.Context) (map[string]string, error) {
 	log.Init(lh.loggerConfig)
+	frotel.AddToCurrentSpan(ctx, attribute.String("mode", "off"))
 
 	return map[string]string{
-		"mode": "no-otel",
+		"mode": "off",
 	}, nil
 }

@@ -38,3 +38,8 @@ build-OtelFunction:
 	go mod tidy
 	GOOS=linux GOARCH=arm64 go build -o bootstrap Otel/cmd/main.go
 	cp bootstrap $(ARTIFACTS_DIR)/bootstrap
+
+build-OtelDecoupledFunction:
+	go mod tidy
+	GOOS=linux GOARCH=arm64 go build -o bootstrap OtelDecoupled/cmd/main.go
+	cp bootstrap $(ARTIFACTS_DIR)/bootstrap

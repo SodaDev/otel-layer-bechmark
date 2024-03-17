@@ -17,9 +17,9 @@ func New(loggerConfig log.Configuration) *LambdaHandler {
 
 func (lh *LambdaHandler) Handle(ctx context.Context) (map[string]string, error) {
 	log.Init(lh.loggerConfig)
-	frotel.AddToCurrentSpan(ctx, attribute.String("mode", "on"))
+	frotel.AddToCurrentSpan(ctx, attribute.String("mode", "decoupled"))
 
 	return map[string]string{
-		"mode": "on",
+		"mode": "decoupled",
 	}, nil
 }
