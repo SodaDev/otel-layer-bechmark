@@ -1,0 +1,33 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
+Parameters:
+  Project:
+    Type: String
+    Default: otel-benchmark
+  ProjectGroup:
+    Type: String
+    Default: otel
+  Environment:
+    Type: String
+Resources:
+  NoOtel:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./NoOtel/template.yaml
+      # Optional parameter that can have default value overridden
+      Parameters:
+        Project: !Ref Project
+        ProjectGroup: !Ref ProjectGroup
+        Environment: !Ref Environment
+  Otel:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ./Otel/template.yaml
+      # Optional parameter that can have default value overridden
+      Parameters:
+        Project: !Ref Project
+        ProjectGroup: !Ref ProjectGroup
+        Environment: !Ref Environment
+        TracingName: 'otel-benchmark-lambda'

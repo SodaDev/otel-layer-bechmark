@@ -1,0 +1,61 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
+Description: SAM Template for NoOtel
+
+Parameters:
+  Project:
+    Type: String
+  ProjectGroup:
+    Type: String
+  Environment:
+    Type: String
+
+Mappings:
+  Properties:
+    DEV:
+      loggingLevel: 'info'
+    SIT:
+      loggingLevel: 'info'
+    UAT:
+      loggingLevel: 'info'
+    OAT:
+      loggingLevel: 'info'
+    PROD:
+      loggingLevel: 'info'
+
+Resources:
+  FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub
+        - '/aws/lambda/${LambdaName}'
+        - { LambdaName: !Ref NoOtelFunction }
+      RetentionInDays: 14
+
+  NoOtelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ..
+      Handler: bootstrap
+      Runtime: provided.al2
+      AutoPublishAlias: live
+      AutoPublishAliasAllProperties: true
+      Architectures:
+        - arm64
+      Tracing: Active
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          LOG_LEVEL: !FindInMap [ Properties, !Ref Environment, loggingLevel ]
+          APPLICATION: otel-collector-benchmark-off
+          PROJECT: !Ref Project
+          PROJECT_GROUP: !Ref ProjectGroup
+          ATTRIBUTES_PREFIX: otel-collector-benchmark
+          VERSION: 'N/A'
+      FunctionUrlConfig:
+        AuthType: NONE
+    Metadata:
+      BuildMethod: makefile

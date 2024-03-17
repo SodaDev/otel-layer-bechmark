@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform:
+  - AWS::LanguageExtensions
+  - AWS::Serverless-2016-10-31
+Description: SAM Template for Otel
+
+Parameters:
+  Project:
+    Type: String
+  ProjectGroup:
+    Type: String
+  Environment:
+    Type: String
+  TracingName:
+    Type: String
+
+Mappings:
+  Properties:
+    DEV:
+      loggingLevel: 'info'
+    SIT:
+      loggingLevel: 'info'
+    UAT:
+      loggingLevel: 'info'
+    OAT:
+      loggingLevel: 'info'
+    PROD:
+      loggingLevel: 'info'
+
+Resources:
+  FunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub
+        - '/aws/lambda/${LambdaName}'
+        - { LambdaName: !Ref OtelFunction }
+      RetentionInDays: 14
+
+  OtelFunction:
+    # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ..
+      Handler: bootstrap
+      Runtime: provided.al2
+      AutoPublishAlias: live
+      AutoPublishAliasAllProperties: true
+      Architectures:
+        - arm64
+      Tracing: Active
+      Timeout: 30
+      MemorySize: 128
+      Environment:
+        Variables:
+          LOG_LEVEL: !FindInMap [ Properties, !Ref Environment, loggingLevel ]
+          APPLICATION: otel-collector-benchmark-on
+          PROJECT: !Ref Project
+          PROJECT_GROUP: !Ref ProjectGroup
+          ATTRIBUTES_PREFIX: otel-collector-benchmark
+          OPENTELEMETRY_COLLECTOR_CONFIG_FILE:
+            !Sub
+            - '{{resolve:ssm:${ConfigLocation}}}'
+            - ConfigLocation:
+                Fn::ImportValue: OTEL::CollectorConfig::S3Location
+          OPENTELEMETRY_EXTENSION_LOG_LEVEL: warn
+          OTEL_SERVICE_NAME: !Ref TracingName
+          VERSION: 'N/A'
+      FunctionUrlConfig:
+        AuthType: NONE
+      Layers:
+        - !Sub arn:aws:lambda:${AWS::Region}:184161586896:layer:opentelemetry-collector-arm64-0_5_0:1
+      Policies:
+        - Fn::ImportValue: OTEL::CollectorConfig::AccessPolicy
+        - Fn::ImportValue: OTEL::CollectorConfig::DisableXRayReportingPolicy
+    Metadata:
+      BuildMethod: makefile
