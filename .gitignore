@@ -1,1 +1,3 @@
 .aws-sam/
+deployments
+testResults
